@@ -19,9 +19,9 @@ class CharacterWebServices {
   Future<List<dynamic>> getAllCharacters() async {
     try {
       Response response = await dio.get(characterApi);
-      if (kDebugMode) {
-        print(response.data.toString());
-      }
+      // if (kDebugMode) {
+      //   print(response.data.toString());
+      // }
       List<dynamic> characterList = response.data['results'];
       return characterList;
     } catch (e) {
