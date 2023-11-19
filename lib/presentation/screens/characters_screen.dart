@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_offline/flutter_offline.dart';
 import 'package:untitled/business_logic/cubit/characters_cubit.dart';
 
 import '../../data/models/character.dart';
+import '../../strings.dart';
 
 class CharactersScreen extends StatefulWidget {
   const CharactersScreen({super.key});
@@ -34,7 +36,17 @@ class _CharactersScreenState extends State<CharactersScreen> {
         title: _isSearching ? _buildSearchField() : _buildAppBarTitle(),
         actions: _buildAppBarActions(),
       ),
-      body: buildBlocWidget(),
+      body: OfflineBuilder(
+        connectivityBuilder: (
+          BuildContext context,
+          ConnectivityResult connectivity,
+          Widget child,
+        ) {
+          final bool connected = connectivity != ConnectivityResult.none;
+          return connected ? buildBlocWidget() : _buildNoInternetWidget();
+        },
+        child: _buildLoadingIndicator(),
+      ),
     );
   }
 
@@ -107,8 +119,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
   addSearchedForItemsToSearchedList(String searchedCharacter) {
     searchedForCharacters = allCharacters
-        .where((character) =>
-        character.name.toLowerCase().contains(searchedCharacter.toLowerCase()))
+        .where((character) => character.name
+            .toLowerCase()
+            .contains(searchedCharacter.toLowerCase()))
         .toList();
     setState(() {});
   }
@@ -163,7 +176,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: InkWell(
-                    // onTap: () => Navigator.pushNamed(context, characterDetailsScreen , arguments: character),
+                    onTap: () => Navigator.pushNamed(
+                        context, characterDetailsScreen,
+                        arguments: character),
                     child: GridTile(
                       footer: Container(
                         width: double.infinity,
@@ -206,6 +221,28 @@ class _CharactersScreenState extends State<CharactersScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  _buildNoInternetWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            'assets/no_internet.png',
+            // Make sure to place your image in the 'assets' folder
+            width: 400,
+            height: 400,
+            // You can adjust width and height according to your needs
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Can\'t connect, check internet',
+            style: TextStyle(fontSize: 25, color: Colors.black),
+          ),
+        ],
       ),
     );
   }
